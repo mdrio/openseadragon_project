@@ -315,6 +315,8 @@ viewer.addHandler('tile-loaded', changePixels);
 // add handler to recalculate pixels to navigator (so image in nav and viewer stayed the same)
 viewer.navigator.addHandler('tile-loaded', changePixels);
 
+viewer.addHandler('tile-loaded', function (event){remove_white_background(event, urlProbabilities)});
+
 /*-------------- End of handlers---------------- */
 
 
@@ -344,6 +346,33 @@ function getIndex(){
   }
 };
 
+
+function remove_white_background(event, imageUrl) {
+
+     if( event.image.src.includes(imageUrl)){
+
+       var canvas = document.createElement( 'canvas' )
+       canvas.width = event.image.width;
+       canvas.height = event.image.height;
+       var renderedContext = canvas.getContext('2d');
+       renderedContext.drawImage(event.image, 0, 0);
+       var tiledData = renderedContext.getImageData(0, 0, canvas.width, canvas.height);
+       var n = event.image.width * event.image.height;
+
+       for (var i = 0; i < n; i++) {
+          var pix = tiledData.data.slice(i*4, i*4+4);
+         if(pix[0] == 255 && pix[1] == 255 && pix[2] == 255 ){
+             pix[3] = 0;
+          };
+          tiledData.data.set(pix, i*4);
+    };
+
+      renderedContext.putImageData(tiledData, 0, 0);
+      event.tile.context2D = renderedContext;
+     }
+};
+
+
 /* loadOptions()
 If one or more decesion layers are availible, function will load them into drop-down menu
 
@@ -351,6 +380,7 @@ If one or more decesion layers are availible, function will load them into drop-
 - create html option for each parameter
 - load each option into select "decs-layer-options" ("drop-down")
 */
+
 function loadOptions(){
   var x = document.getElementById("decs-layer-options");
   var i = 0;
