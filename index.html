@@ -263,10 +263,12 @@ var urlLogThresh = url.searchParams.get("log_thresh");
 
 // set tile sources for individual images.
 //IIPIMAGE with deepzoom protocol will provide dzi tiles from tif (urlImage, urlAnnotation ...)
-var baseTileSource = "/iipsrv/iipsrv.fcgi?Deepzoom=" + urlImage + ".dzi";
-var probasTileSource = "/iipsrv/iipsrv.fcgi?Deepzoom="+ urlProbabilities +".dzi";
-var annotTileSource = "/iipsrv/iipsrv.fcgi?Deepzoom="+ urlAnnotation +".dzi";
-var decsTileSource = "/iipsrv/iipsrv.fcgi?Deepzoom="+ urlDecision +".dzi";
+var dziPath = "/ome_seadragon/deepzoom/get/";
+
+var baseTileSource = dziPath  + urlImage + ".dzi";
+var probasTileSource = dziPath + urlProbabilities +".dzi";
+var annotTileSource = dziPath + urlAnnotation +".dzi";
+var decsTileSource = dziPath + urlDecision +".dzi";
 
 
 // initialize viewer
@@ -426,18 +428,11 @@ function changePixels(event){
 
    // probability layer
      if( event.image.src.includes(urlProbabilities)){
-       for (var i = 0; i <n; i++) {
+       for (var i = 0; i < n; i++) {
           var pix = tiledData.data.slice(i*4, i*4+4);
-           if(pix[0]+ pix[1]+pix[2] < 10){
-                  pix[3] = 0;
-          }else if((pix[0]+pix[1]+pix[2])/3 >= (threshold*255.0/100.0)){
-                  pix[3] = (pix[0]+pix[1]+pix[2])/3;
-                  pix[0] = 210;
-                  pix[1] = 235;
-                  pix[2] = 0;
-          }else {
-                  pix[3] = 0;
-                };
+         if(pix[0] < (threshold*255.0/100.0)){
+             pix[3] = 0;
+          };
           tiledData.data.set(pix, i*4);
     };
 
